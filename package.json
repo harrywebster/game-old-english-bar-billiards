@@ -1,0 +1,15 @@
+{
+  "name": "robs-gin-bar-billiards",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end tests for the Rob's Gin Bar English Billiards scorer",
+  "scripts": {
+    "serve": "node playwright/static-server.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
