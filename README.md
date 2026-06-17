@@ -1,9 +1,10 @@
-# English Billiards Scorer
+# Rob's Gin Bar — English Billiards Scorer
 
 A self-contained, mobile-first scoreboard for marking up a game of English
-Billiards. It runs entirely in the browser from a single HTML file — no build
-step, no server-side code, no dependencies to install, and no network
-connection required once the page has loaded.
+Billiards, themed for **Rob's Gin Bar** — a home bar and snooker club. It runs
+entirely in the browser from a single HTML file — no build step, no server-side
+code, no dependencies to install, and no network connection required once the
+page has loaded.
 
 The whole app lives in [`public_html/index.html`](public_html/index.html):
 markup, styling and game logic are bundled into one file so it can be dropped
@@ -25,8 +26,12 @@ tablet or laptop into a dedicated marker's board:
 - At the end it shows a full breakdown of the match: per-player statistics and a
   score-progression chart.
 
-It is designed to feel at home on the table rail: dark green "cloth" styling,
-brass accents, big touch targets, and a screen that stays awake while you play.
+It is designed to feel at home on the table rail and behind the bar: the look is
+drawn straight from the room — the green cloth and glossy black rails of the
+table, the tan leather pockets, and the cream / gold / hairline-green of the
+Rob's Gin Bar bottle label, which is reproduced as a diamond mark in the header.
+Big touch targets, a screen that stays awake while you play, and a gently
+animated backdrop of drifting billiard balls round it off.
 
 ---
 
@@ -117,12 +122,47 @@ set up a **New match**.
   duration of the match; refreshing the page starts over.
 - **Progressive enhancement.** Wake-lock, full-screen and the Web Audio API are
   all used only when available and degrade gracefully when they aren't.
+- **Animated background, no libraries.** The drifting billiard balls are a
+  hand-rolled 2D `<canvas>` simulation — wall bounce, ball-to-ball collisions and
+  a push-away from your finger or cursor — with no WebGL and no third-party code.
+  It dims during play so the scoreboard stays legible, and falls back to a static
+  arrangement when the device prefers reduced motion.
 - **Responsive.** Layouts are tuned for phones, tablets and landscape displays.
+
+## Tests
+
+End-to-end tests (Playwright) drive the real page and check the full flow:
+branding and the ballpit, score / break / high-break maths, end break, fouls,
+undo, choosing who breaks first, the win condition and end-of-match summary,
+rematch / new match, and the sound controls. They run against both a desktop
+and a mobile (Pixel 5) profile.
+
+```bash
+npm install                 # install @playwright/test
+npx playwright install chromium   # one-time browser download
+npm test                    # run the suite (spins up a local static server)
+```
+
+`npm run test:headed` watches it happen in a browser; `npm run test:ui` opens
+Playwright's interactive runner. The app itself stays dependency-free — these
+dev dependencies are only for running the tests.
 
 ## Repository layout
 
 ```
 .
 ├── public_html/
-│   └── index.html   # the entire application
-└── README.md        # this file
+│   └── index.html         # the entire application (no build step)
+├── tests/
+│   └── billiards.spec.js  # Playwright end-to-end tests
+├── playwright/
+│   └── static-server.js   # tiny zero-dependency server used by the tests
+├── playwright.config.js   # test + dev-server configuration
+├── package.json           # test scripts and dev dependencies
+├── package-lock.json      # locked dependency versions
+├── .gitignore             # excludes node_modules/ and test output
+└── README.md              # this file
+```
+
+`node_modules/` and Playwright's test output (`test-results/`,
+`playwright-report/`) are generated locally and are not committed.

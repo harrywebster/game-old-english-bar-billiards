@@ -6,27 +6,49 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Billiards" />
-<meta name="theme-color" content="#073429" />
-<title>English Billiards Scorer</title>
+<meta name="apple-mobile-web-app-title" content="Rob's Gin Bar" />
+<meta name="theme-color" content="#05301f" />
+<title>Rob&rsquo;s Gin Bar &middot; English Billiards</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23cf3a2f'/%3E%3Ccircle cx='11' cy='11' r='4.5' fill='%23ffffff' opacity='.75'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --cloth:#0b4d3c; --cloth-deep:#073429; --brass:#c9a24b; --brass-bright:#e8cd86; --brass-dim:#8a6f33;
-    --ivory:#f2ebd9; --ivory-dim:#cdc3a8; --slate:#11302a; --red:#c43027; --red-dark:#7d1f19;
-    --white-ball:#f6f2e6; --shadow:rgba(0,0,0,.45);
+    /* greens drawn from the table cloth; blacks from the glossy rails; cream + thin
+       green hairline + gold/leather lifted from the Rob's Gin Bar label */
+    --cloth:#0c6040; --cloth-deep:#05301f;
+    --rail-hi:#262b31; --rail:#181b20; --rail-lo:#0c0e11;
+    --brass:#c9a24b; --brass-bright:#ecd596; --brass-dim:#7c5a30;
+    --leather:#b98d57; --green-rule:#6f9a55;
+    --ivory:#f1ebdd; --ivory-dim:#c2bba6; --slate:#0e1114; --red:#c43027; --red-dark:#7d1f19;
+    --white-ball:#f6f2e6; --shadow:rgba(0,0,0,.5);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;}
   body{font-family:"Spectral",Georgia,serif;color:var(--ivory);
-    background:radial-gradient(120% 80% at 50% 0%, #0f5a47 0%, var(--cloth) 42%, var(--cloth-deep) 100%);
+    background:radial-gradient(125% 90% at 50% -10%, #12895a 0%, var(--cloth) 38%, var(--cloth-deep) 100%);
     min-height:100dvh;display:flex;justify-content:center;overflow-x:hidden;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+
+  /* animated billiard-ball background (hand-rolled 2D canvas — no libraries) */
+  .ballpit{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.82;transition:opacity .6s ease;}
+  body[data-screen="game"] .ballpit{opacity:.26;}
+
   .felt-grain{position:fixed;inset:0;pointer-events:none;z-index:0;
     background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px),radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);
-    background-size:4px 4px,5px 5px;background-position:0 0,2px 3px;opacity:.6;box-shadow:inset 0 0 140px 30px rgba(0,0,0,.5);}
+    background-size:4px 4px,5px 5px;background-position:0 0,2px 3px;opacity:.55;box-shadow:inset 0 0 150px 36px rgba(0,0,0,.55);}
+
+  /* ---------- Rob's Gin Bar diamond mark (echoes the bottle label) ---------- */
+  .brandmark{position:relative;width:268px;height:204px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
+  .brandmark::before,.brandmark::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg);border-radius:8px;}
+  .brandmark::before{width:152px;height:152px;border:1.5px solid var(--ivory);background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(0,0,0,.22));box-shadow:0 6px 22px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.35);}
+  .brandmark::after{width:132px;height:132px;border:1px solid var(--green-rule);opacity:.85;}
+  .brand-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;line-height:1;}
+  .brand-rob{font-family:"Spectral",Georgia,serif;font-weight:700;font-size:2.1rem;letter-spacing:.01em;color:var(--ivory);text-shadow:0 1px 0 rgba(0,0,0,.55);}
+  .brand-gin{font-family:"Spectral",Georgia,serif;font-weight:500;font-size:.92rem;letter-spacing:.38em;text-transform:uppercase;color:var(--ivory);margin-left:.38em;}
+  .brand-rule{width:52px;height:1px;background:var(--green-rule);margin:5px 0 4px;}
+  .brand-sub{font-family:"Oswald",sans-serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass-bright);}
 
   .frame{position:relative;z-index:1;width:100%;max-width:520px;
     padding:18px 16px calc(20px + env(safe-area-inset-bottom));flex-direction:column;gap:16px;}
@@ -50,7 +72,7 @@
   #soundBtn.muted .snd-wave{opacity:0;} #soundBtn.muted .snd-slash{opacity:1;}
 
   /* ---------- setup screen ---------- */
-  .setup-card{background:linear-gradient(180deg,#163d35,#0b251f);border:1px solid var(--brass-dim);border-radius:14px;
+  .setup-card{background:linear-gradient(160deg,#23282e,#0c0e11);border:1px solid var(--brass-dim);border-radius:14px;
     padding:18px 16px;display:flex;flex-direction:column;gap:20px;box-shadow:0 8px 24px var(--shadow);}
   .pl-setup{display:flex;flex-direction:column;gap:9px;}
   .field-label{font-family:"Oswald",sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:.64rem;color:var(--brass);}
@@ -76,8 +98,8 @@
 
   /* ---------- scoreboard ---------- */
   .board{display:flex;gap:12px;}
-  .panel{flex:1;position:relative;background:linear-gradient(180deg,#163d35 0%,var(--slate) 100%);border:1px solid var(--brass-dim);
-    border-radius:10px;padding:12px 10px 14px;box-shadow:0 6px 16px var(--shadow),inset 0 1px 0 rgba(255,255,255,.06);
+  .panel{flex:1;position:relative;background:linear-gradient(160deg,#262b31 0%,var(--rail-lo) 100%);border:1px solid var(--brass-dim);
+    border-radius:10px;padding:12px 10px 14px;box-shadow:0 6px 16px var(--shadow),inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(111,154,85,.12);
     text-align:center;transition:border-color .25s,box-shadow .25s,transform .12s;}
   .panel.active{border-color:var(--brass-bright);box-shadow:0 0 0 1px var(--brass),0 8px 22px rgba(0,0,0,.5),inset 0 0 18px rgba(201,162,75,.18);}
   .nameplate{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:6px;min-height:22px;}
@@ -94,14 +116,14 @@
   .break-bar .val{font-family:"Oswald",sans-serif;font-weight:600;font-size:1.6rem;color:var(--ivory);font-variant-numeric:tabular-nums;line-height:1;}
 
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-  .btn{appearance:none;cursor:pointer;border:none;touch-action:manipulation;font-family:"Oswald",sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:.05em;border-radius:9px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ivory);background:#1b3f37;border:1px solid rgba(255,255,255,.07);box-shadow:0 3px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.07);transition:transform .07s,box-shadow .07s,filter .15s;}
+  .btn{appearance:none;cursor:pointer;border:none;touch-action:manipulation;font-family:"Oswald",sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:.05em;border-radius:9px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ivory);background:linear-gradient(180deg,#272c32,#13161a);border:1px solid rgba(255,255,255,.07);box-shadow:0 3px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .07s,box-shadow .07s,filter .15s;}
   .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35);}
   .btn .pts{font-size:1.35rem;font-weight:700;line-height:1;}
   .btn .nm{font-size:.66rem;letter-spacing:.08em;opacity:.92;}
   .btn .ball{width:16px;height:16px;border-radius:50%;margin-bottom:1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 1px 1px rgba(0,0,0,.4);}
   .ball.red{background:radial-gradient(circle at 35% 30%,#e2685b,var(--red) 55%,var(--red-dark));}
   .btn.red{background:linear-gradient(180deg,#5a201b,#3e1612);border-color:rgba(196,48,39,.5);}
-  .btn.white{background:linear-gradient(180deg,#3a4a44,#26332e);}
+  .btn.white{background:linear-gradient(180deg,#3c4147,#22262b);}
   .btn.cannon{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:10px;background:linear-gradient(180deg,#6f5722,#4a3914);border-color:var(--brass-dim);}
   .btn.cannon .pts{color:var(--brass-bright);}
   .btn.cannon .balls{display:flex;}
@@ -120,7 +142,7 @@
   .overlay.show{display:flex;}
   #confirm,#soundPicker{z-index:30;} #end{z-index:20;align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
-  .dialog{background:linear-gradient(180deg,#163d35,#0b251f);border:1px solid var(--brass);border-radius:14px;padding:24px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.6);}
+  .dialog{background:linear-gradient(160deg,#23282e,#0c0e11);border:1px solid var(--brass);border-radius:14px;padding:24px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.6);}
   .dialog p{font-size:1rem;line-height:1.45;margin:0 0 20px;color:var(--ivory);}
   .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .dialog-title{font-family:"Oswald",sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:.78rem;color:var(--brass);margin:0 0 14px;}
@@ -128,7 +150,7 @@
   .pack-opt{text-align:center;}
   .pack-opt.sel{background:linear-gradient(180deg,#caa54e,#9c7c2e);color:#1a1205;border-color:var(--brass-bright);font-weight:600;}
 
-  .end-card{background:linear-gradient(180deg,#163d35,#0b251f);border:1px solid var(--brass);border-radius:16px;padding:24px 20px;max-width:760px;width:100%;margin:auto;box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 24px rgba(201,162,75,.1);}
+  .end-card{background:linear-gradient(160deg,#23282e,#0c0e11);border:1px solid var(--brass);border-radius:16px;padding:24px 20px;max-width:760px;width:100%;margin:auto;box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 24px rgba(201,162,75,.1);}
   .end-card .crown{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--brass);font-family:"Oswald",sans-serif;text-align:center;}
   .end-card h2{font-family:"Oswald",sans-serif;text-transform:uppercase;font-size:1.9rem;margin:6px 0 2px;color:var(--brass-bright);text-align:center;}
   .end-final{font-size:1rem;color:var(--ivory-dim);margin-bottom:18px;text-align:center;}
@@ -181,11 +203,20 @@
 </style>
 </head>
 <body>
+<canvas id="ballpit" class="ballpit" aria-hidden="true"></canvas>
 <div class="felt-grain"></div>
 
 <!-- ===================== SETUP SCREEN ===================== -->
 <div class="frame screen shown" id="setup">
   <header>
+    <div class="brandmark" role="img" aria-label="Rob's Gin Bar">
+      <div class="brand-content">
+        <span class="brand-rob">Rob&rsquo;s</span>
+        <span class="brand-gin">Gin&nbsp;Bar</span>
+        <span class="brand-rule"></span>
+        <span class="brand-sub">Snooker &amp; Billiards</span>
+      </div>
+    </div>
     <p class="eyebrow">New Match</p>
     <h1 class="title">English Billiards</h1>
   </header>
@@ -214,13 +245,13 @@
     </div>
     <button class="ctrl primary big" id="startBtn">Start match</button>
   </div>
-  <p class="build">Build v8 &middot; 2026-06-15</p>
+  <p class="build">Rob&rsquo;s Gin Bar &middot; Build v9 &middot; 2026-06-17</p>
 </div>
 
 <!-- ===================== GAME SCREEN ===================== -->
 <div class="frame screen" id="game">
   <header>
-    <p class="eyebrow">Marker&rsquo;s Board</p>
+    <p class="eyebrow">Rob&rsquo;s Gin Bar &middot; Marker&rsquo;s Board</p>
     <h1 class="title">English Billiards</h1>
     <p class="target-line">Game to <span id="targetShow">100</span> up</p>
     <div class="utility-row">
@@ -296,7 +327,7 @@
 
 <div class="overlay" id="end">
   <div class="end-card">
-    <p class="crown">Game</p>
+    <p class="crown">Rob&rsquo;s Gin Bar &middot; Frame Over</p>
     <h2 id="endName">Winner</h2>
     <p class="end-final" id="endFinal"></p>
     <p class="summary-line" id="endSummary"></p>
@@ -403,6 +434,98 @@
     async function set(on){wanted=on;if(on)return await acquire();if(lock){try{await lock.release();}catch(e){}lock=null;}return true;}
     document.addEventListener('visibilitychange',()=>{if(wanted&&document.visibilityState==='visible'&&!lock)acquire();});
     return{set,isWanted:()=>wanted,isSupported:()=>supported};
+  })();
+
+  /* ---------- ballpit background (zero-dependency 2D canvas) ----------
+     Billiard / snooker balls that drift, bounce off the walls and shove
+     each other around; they scatter away from your finger or cursor.    */
+  const Ballpit=(function(){
+    const cv=document.getElementById('ballpit'); if(!cv) return {init(){}};
+    const ctx=cv.getContext('2d');
+    const COLORS=[
+      ['#f4f0e4','#cfc7b0'], /* cue ball  */ ['#e8b93a','#a9821f'], /* yellow */
+      ['#cf3a2f','#7d1f19'], /* red       */ ['#3f86d6','#244e88'], /* blue   */
+      ['#e86fa5','#a23c69'], /* pink      */ ['#57b06a','#2f6e3f'], /* green  */
+      ['#e8843a','#a9531f'], /* orange    */ ['#7a4a2a','#4a2c18'], /* brown  */
+      ['#1e2024','#0a0b0d'], /* black     */ ['#c9a24b','#8a6f33']  /* brass  */
+    ];
+    const REST=0.65; /* wall bounce (restitution) */
+    let W=0,H=0,dpr=1,balls=[],raf=0,last=0,running=false;
+    let px=-9999,py=-9999,pActive=false;
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const rnd=(a,b)=>a+Math.random()*(b-a);
+
+    function resize(){
+      dpr=Math.min(window.devicePixelRatio||1,2);
+      W=window.innerWidth; H=window.innerHeight;
+      cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+      cv.style.width=W+'px'; cv.style.height=H+'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      balls.forEach(b=>{b.x=Math.min(Math.max(b.r,b.x),W-b.r);b.y=Math.min(Math.max(b.r,b.y),H-b.r);});
+    }
+    function make(){
+      const r=Math.sqrt(W*H)/30;                 /* one size for every ball */
+      let n=Math.round(W*H/42000); n=Math.max(7,Math.min(n,18));
+      balls=[];
+      for(let i=0;i<n;i++){
+        balls.push({x:rnd(r,W-r),y:rnd(r,H-r),vx:rnd(-60,60),vy:rnd(-60,60),r,c:COLORS[i%COLORS.length]});
+      }
+    }
+    function step(dt){
+      const n=balls.length;
+      for(let i=0;i<n;i++){
+        const b=balls[i];
+        b.vx+=rnd(-12,12)*dt; b.vy+=rnd(-12,12)*dt;          /* gentle drift keeps it alive */
+        if(pActive){const dx=b.x-px,dy=b.y-py,R=150,d2=dx*dx+dy*dy;
+          if(d2<R*R){const d=Math.sqrt(d2)||1,f=(1-d/R)*1000;b.vx+=(dx/d)*f*dt;b.vy+=(dy/d)*f*dt;}}
+        b.vx*=0.995; b.vy*=0.995;
+        const sp=Math.hypot(b.vx,b.vy);
+        if(sp>175){b.vx*=175/sp;b.vy*=175/sp;} else if(sp<14&&sp>0){b.vx*=14/sp;b.vy*=14/sp;}
+        b.x+=b.vx*dt; b.y+=b.vy*dt;
+        if(b.x-b.r<0){b.x=b.r;b.vx=-b.vx*REST;} else if(b.x+b.r>W){b.x=W-b.r;b.vx=-b.vx*REST;}
+        if(b.y-b.r<0){b.y=b.r;b.vy=-b.vy*REST;} else if(b.y+b.r>H){b.y=H-b.r;b.vy=-b.vy*REST;}
+      }
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        const a=balls[i],b=balls[j],dx=b.x-a.x,dy=b.y-a.y,min=a.r+b.r,d2=dx*dx+dy*dy;
+        if(d2<min*min&&d2>0){
+          const d=Math.sqrt(d2),nx=dx/d,ny=dy/d,ov=min-d,m1=a.r*a.r,m2=b.r*b.r,tm=m1+m2;
+          a.x-=nx*ov*(m2/tm); a.y-=ny*ov*(m2/tm); b.x+=nx*ov*(m1/tm); b.y+=ny*ov*(m1/tm);
+          const vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+          if(vn<0){const imp=-(1+REST)*vn/tm;
+            a.vx-=imp*m2*nx; a.vy-=imp*m2*ny; b.vx+=imp*m1*nx; b.vy+=imp*m1*ny;}
+        }
+      }
+    }
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      for(const b of balls){
+        ctx.beginPath();ctx.fillStyle='rgba(0,0,0,0.28)';
+        ctx.ellipse(b.x+b.r*0.16,b.y+b.r*0.2,b.r*0.96,b.r*0.96,0,0,6.2832);ctx.fill();
+        const g=ctx.createRadialGradient(b.x-b.r*0.35,b.y-b.r*0.4,b.r*0.1,b.x,b.y,b.r);
+        g.addColorStop(0,'#ffffff');g.addColorStop(0.18,b.c[0]);g.addColorStop(1,b.c[1]);
+        ctx.beginPath();ctx.fillStyle=g;ctx.arc(b.x,b.y,b.r,0,6.2832);ctx.fill();
+        ctx.beginPath();ctx.fillStyle='rgba(255,255,255,0.5)';
+        ctx.arc(b.x-b.r*0.34,b.y-b.r*0.4,b.r*0.15,0,6.2832);ctx.fill();
+      }
+    }
+    function frame(t){
+      if(!running)return;
+      let dt=(t-last)/1000; last=t; if(dt>0.05)dt=0.05; if(dt<=0)dt=0.016;
+      if(document.body.getAttribute('data-screen')==='game') dt*=0.45;  /* calmer during play */
+      step(dt); draw(); raf=requestAnimationFrame(frame);
+    }
+    function start(){if(running||reduce)return;running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+    function stop(){running=false;if(raf)cancelAnimationFrame(raf);raf=0;}
+    function init(){
+      resize(); make(); draw();
+      window.addEventListener('resize',()=>{resize();make();if(reduce)draw();},{passive:true});
+      window.addEventListener('pointermove',e=>{px=e.clientX;py=e.clientY;pActive=true;},{passive:true});
+      window.addEventListener('pointerdown',e=>{px=e.clientX;py=e.clientY;pActive=true;},{passive:true});
+      window.addEventListener('pointerup',()=>{pActive=false;},{passive:true});
+      document.addEventListener('visibilitychange',()=>{document.hidden?stop():start();});
+      start();
+    }
+    return{init};
   })();
 
   /* ---------- game state ---------- */
@@ -556,6 +679,7 @@
   /* ---------- screens ---------- */
   function showScreen(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('shown',s.id===id));
+    document.body.setAttribute('data-screen',id);
   }
   function startMatch(cfg){
     lastConfig=JSON.parse(JSON.stringify(cfg));
@@ -655,7 +779,7 @@
   }
 
   /* ---------- init ---------- */
-  renderSwatches(); packLabel(); awakeLabel(); showScreen('setup');
+  renderSwatches(); packLabel(); awakeLabel(); showScreen('setup'); Ballpit.init();
 })();
 </script>
 </body>
