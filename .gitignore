@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# Playwright test output
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Playwright MCP / in-editor browser artifacts
+/.playwright-mcp/
+
+# local editor / tooling config
+/.claude/
